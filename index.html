@@ -10,8 +10,20 @@
 </head>
 <body>
 
-  <audio src ="./audio/thunder-1.m4a" volume="1"></audio>
-  <audio src ="./audio/drums.m4a" volume="0.1"></audio>
+  <audio id="thunder-1" src="./audio/thunder-1.m4a" volume="1"></audio>
+  <audio id="drums" src="./audio/drums.m4a" volume="0.1"></audio>
+
+  <form id="AudioSources">
+    <label>
+      <input type="checkbox" value="thunder-1" id="thunder-1" name="thunder-1" /> Thunder 1
+    </label>
+    <label>
+      <input type="checkbox" value="drums" /> Drums
+    </label>
+    <label>
+      <input type="checkbox" value="./audio/orchestra.mp3" /> Orchestra
+    </label>
+  </form>
   
 </body>
 </html>
