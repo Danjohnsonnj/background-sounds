@@ -4,6 +4,7 @@ class Mixer {
     this.audioCtx = new this.AudioContext()
     this.sources = []
     this.buffers = []
+    this.count = 0
   }
 
   async addSound(src) {
@@ -20,6 +21,8 @@ class Mixer {
   }
   
   addSoundFromElement(audioEl) {
+    const index = this.count
+    this.count++
     const source = this.audioCtx.createMediaElementSource(audioEl)
     source.mediaElement.loop = true
     const gainNode = this.audioCtx.createGain()
@@ -27,12 +30,14 @@ class Mixer {
     gainNode.gain.value = audioEl.getAttribute('volume') || 1
     gainNode.connect(this.audioCtx.destination)
 
-    this.buffers.push(null)
-    this.sources.push(source)
+    this.buffers[index] = null
+    this.sources[index] = source
     return source
   }
 
   async addSoundFromURL(url) {
+    const index = this.count
+    this.count++
     const request = new XMLHttpRequest()
     request.open('GET', url, true)
     request.responseType = 'arraybuffer'
@@ -49,8 +54,8 @@ class Mixer {
       request.send()
     })
 
-    this.buffers.push(source)
-    this.sources.push(null)
+    this.buffers[index] = source
+    this.sources[index] = null
     return source
   }
 
