@@ -3,13 +3,16 @@ class Mixer {
     this.AudioContext = window.AudioContext || window.webkitAudioContext
     this.audioCtx = new this.AudioContext()
     this.sources = []
+    this.buffers = []
   }
 
   async addSound(src) {
     if (src instanceof HTMLAudioElement) {
+      console.log(`${src} added`)
       return this.addSoundFromElement(src)
     }
     if (typeof src === 'string') {
+      console.log(`${src} added`)
       return await this.addSoundFromURL(src)
     }
     console.error(new Error(`${src} is not an HTMLAudioElement`))
@@ -23,8 +26,10 @@ class Mixer {
     source.connect(gainNode)
     gainNode.gain.value = audioEl.getAttribute('volume') || 1
     gainNode.connect(this.audioCtx.destination)
+
+    this.buffers.push(null)
     this.sources.push(source)
-    return this.audioCtx
+    return source
   }
 
   async addSoundFromURL(url) {
@@ -32,7 +37,7 @@ class Mixer {
     request.open('GET', url, true)
     request.responseType = 'arraybuffer'
 
-    const audio = await new Promise((resolve, reject) => {
+    const source = await new Promise((resolve, reject) => {
       request.onload = () => {
         this.audioCtx.decodeAudioData(request.response, buffer => {
           resolve(buffer)
@@ -44,21 +49,20 @@ class Mixer {
       request.send()
     })
 
-    const source = this.audioCtx.createBufferSource()
-    source.buffer = audio
-    source.loop = true
-    source.connect(this.audioCtx.destination)
-    this.sources.push(source)
+    this.buffers.push(source)
+    this.sources.push(null)
     return source
   }
 
-  playByType(src) {
-    if (src instanceof AudioBufferSourceNode) {
-      try {
-        src.start(0)
-      } catch (err) {
-        console.warn(`${src} is already playing, ${err}`)
-      }
+  playByType(index) {
+    const src = this.buffers[index] || this.sources[index]
+    if (src instanceof AudioBuffer) {
+      const source = this.audioCtx.createBufferSource()
+      source.buffer = src
+      source.loop = true
+      source.connect(this.audioCtx.destination)  
+      source.start()
+      this.sources[index] = source
     } else if (src instanceof MediaElementAudioSourceNode){
       src.mediaElement.play()
     } else {
@@ -66,24 +70,37 @@ class Mixer {
     }
   }
 
-  play(index = null) {
-    if (typeof index === 'number' && this.sources[index]) {
-      const src = this.sources[index]
-      this.playByType(src)
+  pauseByType(index) {
+    const src = this.buffers[index] || this.sources[index]
+    if (src instanceof AudioBuffer) {
+      this.sources[index].disconnect()
+      this.sources[index] = null
+    } else if (src instanceof MediaElementAudioSourceNode){
+      src.mediaElement.pause()
+      src.mediaElement.currentTime = 0
+    } else {
+      console.error(`${src} is not a supported type`)
     }
-    this.sources.forEach(s => {
-      this.playByType(s)
+  }
+
+  play(index = null) {
+    if (typeof index === 'number') {
+      this.playByType(index)
+      return
+    }
+    this.sources.forEach((s, idx) => {
+      this.playByType(idx)
     })
     return this.sources
   }
 
   pause(index = null) {
-    if (index && this.sources[index]) {
-      this.sources[index].mediaElement.pause()
-      return this.sources[index]
+    if (typeof index === 'number') {
+      this.pauseByType(index)
+      return
     }
-    this.sources.forEach(s => {
-      s.mediaElement.pause()
+    this.sources.forEach((s, idx) => {
+      this.pauseByType(idx)
     })
     return this.sources
   }
