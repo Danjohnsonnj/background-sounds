@@ -10,7 +10,7 @@ class Mixer {
   async addSound(src) {
     if (src instanceof HTMLAudioElement) {
       console.log(`${src} added`)
-      return this.addSoundFromElement(src)
+      return await this.addSoundFromElement(src)
     }
     if (typeof src === 'string') {
       console.log(`${src} added`)

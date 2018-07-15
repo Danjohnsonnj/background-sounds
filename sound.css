@@ -26,7 +26,15 @@
   border: 0.1em solid;
   border-radius: 2em;
   cursor: pointer;
-  position: relative
+  position: relative;
+  opacity: 0.25;
+  pointer-events: none;
+  transition: opacity 0.5s ease-in;
+}
+
+#AudioSources label.ready {
+  opacity: 1;
+  pointer-events: unset;
 }
 
 #AudioSources label:not(:last-child) {
