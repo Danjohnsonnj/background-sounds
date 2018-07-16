@@ -10,21 +10,26 @@ const sourceInputs = inputElements.map(i => {
   }
 })
 
-const loadPromises = []
-
 inputElements.forEach((el, index) => {
-  loadPromises.push(mixer.addSound(sourceInputs[index]))
-})
-
-Promise.all(loadPromises).then((results) => {
-  results.forEach((result, i) => {
-    inputElements[i].parentElement.classList.add('ready')
-    inputElements[i].addEventListener('change', e => {
+  new Promise((resolve, reject) => {
+    const sound = new Audio()
+    sound.preload = true
+    sound.mute = true
+    sound.volume = 0
+    sound.addEventListener('canplaythrough', resolve)
+    sound.addEventListener('error', reject)
+    sound.src = sourceInputs[index]
+  }).then(async () => {
+    const p = await mixer.addSound(sourceInputs[index])
+    inputElements[index].parentElement.classList.add('ready')
+    inputElements[index].addEventListener('change', e => {
       if (e.currentTarget.checked) {
-        mixer.play(i)
+        mixer.play(index)
       } else {
-        mixer.pause(i)
+        mixer.pause(index)
       }
     })
+  }).catch(err => {
+    console.log(err)
   })
 })
