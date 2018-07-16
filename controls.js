@@ -14,8 +14,6 @@ inputElements.forEach((el, index) => {
   new Promise((resolve, reject) => {
     const sound = new Audio()
     sound.preload = true
-    sound.mute = true
-    sound.volume = 0
     sound.addEventListener('canplaythrough', resolve)
     sound.addEventListener('error', reject)
     sound.src = sourceInputs[index]
