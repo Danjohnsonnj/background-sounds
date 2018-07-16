@@ -18,8 +18,8 @@ inputElements.forEach((el, index) => {
     sound.addEventListener('error', reject)
     sound.src = sourceInputs[index]
   }).then(async () => {
-    const p = await mixer.addSound(sourceInputs[index])
-    inputElements[index].parentElement.classList.add('ready')
+    await mixer.addSound(sourceInputs[index])
+    inputElements[index].parentElement.classList.remove('waiting')
     inputElements[index].addEventListener('change', e => {
       if (e.currentTarget.checked) {
         mixer.play(index)
